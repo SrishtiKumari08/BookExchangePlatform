@@ -39,6 +39,12 @@ required:true
 createdAt:{
 type:Date,
 default:Date.now
+},
+
+status:{
+type:String,
+enum:["available","exchanged"],
+default:"available"
 }
 
 });

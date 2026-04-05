@@ -19,6 +19,7 @@ required:true
 
 status:{
 type:String,
+enum:["pending","accepted","rejected"],
 default:"pending"
 },
 
