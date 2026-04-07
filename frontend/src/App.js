@@ -1,35 +1,51 @@
-import React, { useEffect } from "react";
-import { io } from "socket.io-client";
+import React from "react";
+import { BrowserRouter,Routes,Route } from "react-router-dom";
 
-const socket = io("http://localhost:5000");
+import Navbar from "./components/Navbar";
+
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import UploadBook from "./pages/UploadBook";
+import Dashboard from "./pages/Dashboard";
+import BookDetails from "./pages/BookDetails";
+import Profile from "./pages/Profile";
+import Chat from "./pages/Chat";
+import EditBook from "./pages/EditBook";
+
+import Landing from "./pages/Landing";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
+function AppContent() {
+  const { isLoggedIn } = useAuth();
+  
+  return (
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={isLoggedIn ? <Home /> : <Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        
+        {/* Protected Routes */}
+        <Route path="/upload" element={<UploadBook />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/books/:id" element={<BookDetails />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/edit-book/:id" element={<EditBook />} />
+      </Routes>
+    </>
+  );
+}
 
 function App() {
-
-  useEffect(() => {
-
-    socket.on("receiveMessage", (data) => {
-      console.log("Message received:", data);
-    });
-
-  }, []);
-
-  const sendMessage = () => {
-
-    socket.emit("sendMessage", {
-      message: "Hello from React"
-    });
-
-  };
-
   return (
-    <div style={{padding:"20px"}}>
-      <h1>Socket Chat Test</h1>
-
-      <button onClick={sendMessage}>
-        Send Message
-      </button>
-
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

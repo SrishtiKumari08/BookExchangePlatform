@@ -41,15 +41,26 @@ export const createBook = async (req, res) => {
 // GET BOOKS (CITY FILTER)
 export const getBooks = async (req, res) => {
     try {
-
         const userId = req.user.id;
-
         const user = await User.findById(userId);
-
-        const books = await Book.find({ city: user.city }).populate("owner", "name email");
+        
+        // Find all books NOT owned by the user, preferably in their city
+        const books = await Book.find({ 
+            owner: { $ne: userId } 
+        }).populate("owner", "name email");
 
         res.json(books);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
+// GET MY BOOKS
+export const getMyBooks = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const books = await Book.find({ owner: userId });
+        res.json(books);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -62,7 +73,11 @@ try{
 const {query} = req.query;
 
 const books = await Book.find({
-title:{$regex:query,$options:"i"}
+    $or: [
+        { title: { $regex: query, $options: "i" } },
+        { author: { $regex: query, $options: "i" } },
+        { category: { $regex: query, $options: "i" } }
+    ]
 }).populate("owner","name email");
 
 res.json(books);
@@ -100,5 +115,60 @@ export const filterBooks = async (req,res)=>{
 
     }catch(error){
         res.status(500).json({message:error.message});
+    }
+};
+
+// UPDATE BOOK
+export const updateBook = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, author, description, category } = req.body;
+        
+        const book = await Book.findById(id);
+
+        if (!book) {
+            return res.status(404).json({ message: "Book not found" });
+        }
+
+        if (book.owner.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Unauthorized to update this book" });
+        }
+
+        book.title = title || book.title;
+        book.author = author || book.author;
+        book.description = description || book.description;
+        book.category = category || book.category;
+
+        if (req.file) {
+            book.image = req.file.path;
+        }
+
+        const updatedBook = await book.save();
+        res.json(updatedBook);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// DELETE BOOK
+export const deleteBook = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const book = await Book.findById(id);
+
+        if (!book) {
+            return res.status(404).json({ message: "Book not found" });
+        }
+
+        if (book.owner.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Unauthorized to delete this book" });
+        }
+
+        await Book.findByIdAndDelete(id);
+        res.json({ message: "Book deleted successfully" });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 };

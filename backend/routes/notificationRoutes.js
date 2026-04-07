@@ -19,5 +19,27 @@ router.get("/", authMiddleware, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// MARK NOTIFICATION AS READ
+router.put("/:id/read", authMiddleware, async (req, res) => {
+  try {
+    const notification = await Notification.findById(req.params.id);
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
+    
+    // Ensure the notification belongs to the user
+    if (notification.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    notification.read = true;
+    await notification.save();
+
+    res.json(notification);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 export default router;

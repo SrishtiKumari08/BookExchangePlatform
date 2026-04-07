@@ -23,12 +23,18 @@ enum:["pending","accepted","rejected"],
 default:"pending"
 },
 
-createdAt:{
-type:Date,
-default:Date.now
-}
+    createdAt:{
+        type:Date,
+        default:Date.now
+    },
+    completedAt: {
+        type: Date
+    }
 
 });
+
+// Prevent a user from requesting the same book multiple times
+exchangeSchema.index({ requester: 1, book: 1 }, { unique: true });
 
 const Exchange = mongoose.model("Exchange",exchangeSchema);
 

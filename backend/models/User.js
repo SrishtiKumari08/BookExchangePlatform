@@ -18,6 +18,22 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    profilePicture: {
+        type: String,
+        default: ""
+    },
+    phone: {
+        type: String,
+        default: ""
+    },
+    bio: {
+        type: String,
+        default: ""
+    },
+    averageRating: {
+        type: Number,
+        default: 0
+    },
     createdAt:{
         type:Date,
         default:Date.now
